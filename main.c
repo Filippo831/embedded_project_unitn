@@ -1,29 +1,42 @@
-#include "msp.h"
+#include <ti/devices/msp432p4xx/inc/msp.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <ti/grlib/grlib.h>
+#include "LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "LcdDriver/HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.h"
 
 
-/**
- * main.c
- */
+Graphics_Context g_sContext;
 
-void delay(uint32_t t);
-
-void main(void)
+int main(void)
 {
-	WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;		// stop watchdog timer
+    // Stop watchdog timer
+    WDT_A_holdTimer();
+
+    // Initialize the display
+    Crystalfontz128x128_Init();
+
+    // Set orientation if needed (optional)
+    Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
+
+    // Initialize graphics context
+    Graphics_initContext(&g_sContext, &g_sCrystalfontz128x128, &g_sCrystalfontz128x128_funcs);
+    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_RED);
+    Graphics_setBackgroundColor(&g_sContext, GRAPHICS_COLOR_WHITE);
+    GrContextFontSet(&g_sContext, &g_sFontFixed6x8);
+    Graphics_clearDisplay(&g_sContext);
 
 
-	P1->DIR |= BIT0;
-	P1->OUT &= ~BIT0;
+
+    // Draw text on the screen
+    Graphics_drawStringCentered(&g_sContext,
+                                    (int8_t *)"Joystick:",
+                                    AUTO_STRING_LENGTH,
+                                    64,
+                                    30,
+                                    OPAQUE_TEXT);
 
 
-	while(1) {
-	    P1->OUT ^= BIT0;
-	    delay(100000);
-	}
-
+    // Loop forever
+    while (1);
 }
 
-void delay(uint32_t t) {
-    volatile uint32_t i;
-    for (i=0; i<t; i++);
-}
