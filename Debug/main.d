@@ -55,6 +55,7 @@ main.obj: C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/assert.
 main.obj: ../LcdDriver/Crystalfontz128x128_ST7735.h
 main.obj: Z:/simplelink_msp432p4_sdk_3_40_01_02/source/ti/grlib/grlib.h
 main.obj: ../LcdDriver/HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.h
+main.obj: ../utils/display/display.h
 
 ../main.c:
 
@@ -165,4 +166,6 @@ C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/assert.h:
 Z:/simplelink_msp432p4_sdk_3_40_01_02/source/ti/grlib/grlib.h:
 
 ../LcdDriver/HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.h:
+
+../utils/display/display.h:
 

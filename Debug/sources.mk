@@ -113,4 +113,6 @@ PDE_DEPS__QUOTED :=
 SUBDIRS := \
 . \
 LcdDriver \
+utils/controls \
+utils/display \
 
