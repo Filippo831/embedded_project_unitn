@@ -16,12 +16,16 @@ void init_display(Graphics_Context *g_sContext) {
 
     // Initialize graphics context
     Graphics_initContext(g_sContext, &g_sCrystalfontz128x128, &g_sCrystalfontz128x128_funcs);
-    Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_RED);
     Graphics_setBackgroundColor(g_sContext, GRAPHICS_COLOR_BLACK);
     GrContextFontSet(g_sContext, &g_sFontFixed6x8);
     Graphics_clearDisplay(g_sContext);
 }
 
+
+/* display navbar with current temperpature
+ * make the sensore push a read every now and then, use a timer for this
+ *
+ */
 void display_information(float temp, Graphics_Context *g_sContext) {
     char tempString[10];
     sprintf(tempString, "%.1fC", temp);
@@ -30,7 +34,10 @@ void display_information(float temp, Graphics_Context *g_sContext) {
     Graphics_drawStringCentered(g_sContext, (int8_t *)tempString, AUTO_STRING_LENGTH, 64, 12, OPAQUE_TEXT);
 }
 
+// contains the index of action selected, used to highlight the right row
 int selectedIndex = 0;
+
+// take count of how many items are on top of the highest displayed string
 int scrollOffset = 0;
 
 void display_list(char menuItems[][20], Graphics_Context *g_sContext) {
@@ -60,11 +67,9 @@ void display_list(char menuItems[][20], Graphics_Context *g_sContext) {
 }
 
 
-void select_index(int index, char** menuItems, Graphics_Context *g_sContext) {
-    if (index >= 0 && index < sizeof(menuItems)/sizeof(menuItems[0])) {
-        selectedIndex = index;
-        display_list(menuItems, g_sContext);
-    }
+void select_index(int index, char menuItems[][20], Graphics_Context *g_sContext) {
+    selectedIndex = index;
+    display_list(menuItems, g_sContext);
 }
 
 void scroll_up(char** menuItems, Graphics_Context *g_sContext) {
