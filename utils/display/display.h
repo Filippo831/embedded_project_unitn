@@ -1,5 +1,6 @@
 #pragma once
 #include "LcdDriver/Crystalfontz128x128_ST7735.h"
+#include "stdio.h"
 
 extern void init_display(Graphics_Context *g_sContext);
 

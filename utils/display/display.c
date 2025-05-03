@@ -1,5 +1,5 @@
 #include "display.h"
-#include "stdio.h"
+
 
 #define MAX_VISIBLE_ITEMS 5
 
@@ -8,17 +8,18 @@
 
 
 void init_display(Graphics_Context *g_sContext) {
-    // Initialize the display
+    /* Initializes display */
     Crystalfontz128x128_Init();
 
-    // Set orientation if needed (optional)
+    /* Set default screen orientation */
     Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
 
-    // Initialize graphics context
-    Graphics_initContext(g_sContext, &g_sCrystalfontz128x128, &g_sCrystalfontz128x128_funcs);
-    Graphics_setBackgroundColor(g_sContext, GRAPHICS_COLOR_BLACK);
-    GrContextFontSet(g_sContext, &g_sFontFixed6x8);
-    Graphics_clearDisplay(g_sContext);
+    /* Initializes graphics context */
+    Graphics_initContext(&g_sContext, &g_sCrystalfontz128x128, &g_sCrystalfontz128x128_funcs);
+    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_RED);
+    Graphics_setBackgroundColor(&g_sContext, GRAPHICS_COLOR_WHITE);
+    GrContextFontSet(&g_sContext, &g_sFontFixed6x8);
+    Graphics_clearDisplay(&g_sContext);
 }
 
 

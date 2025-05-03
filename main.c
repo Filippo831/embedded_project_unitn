@@ -2,8 +2,10 @@
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <ti/grlib/grlib.h>
 #include "LcdDriver/Crystalfontz128x128_ST7735.h"
-#include "LcdDriver/HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.h"
+#include <stdio.h>
+
 #include "utils/display/display.h"
+#include "utils/controls/controls.h"
 
 
 /*
@@ -15,56 +17,87 @@
 
 
 
-void setup_timer();
-static int timerClock = 0;
-
 Graphics_Context g_sContext;
 char list[20][20];
 int index = 0;
 
+static uint16_t cursorPosition[2];  // [X, Y]
+
 int main(void)
 {
-    // Stop watchdog timer
-    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;
+    /* Halting WDT and disabling master interrupts */
+    MAP_WDT_A_holdTimer();
+    MAP_Interrupt_disableMaster();
 
+    /* Set the core voltage level to VCORE1 */
+    MAP_PCM_setCoreVoltageLevel(PCM_VCORE1);
 
-    sprintf(list[0], "mario");
-    sprintf(list[1], "gianni");
-    sprintf(list[2], "tony");
+    /* Set 2 flash wait states for Flash bank 0 and 1*/
+    MAP_FlashCtl_setWaitState(FLASH_BANK0, 2);
+    MAP_FlashCtl_setWaitState(FLASH_BANK1, 2);
+
+    /* Initializes Clock System */
+    MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_48);
+    MAP_CS_initClockSignal(CS_MCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_HSMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+    MAP_CS_initClockSignal(CS_ACLK, CS_REFOCLK_SELECT, CS_CLOCK_DIVIDER_1);
+
+    init_adc();
+
+    //sprintf(list[0], "mario");
+    //sprintf(list[1], "gianni");
+    //sprintf(list[2], "tony");
 
     init_display(&g_sContext);
-    display_information(10.0, &g_sContext);
-    display_list(list, &g_sContext);
+    //display_information(10.0, &g_sContext);
+    //display_list(list, &g_sContext);
 
-    P1->DIR |= BIT0;
-    P1->OUT |= BIT0;
-
-    setup_timer();
     // Loop forever
     while (1) {
-        __sleep();
-        if (timerClock == 1) {
-            P1->OUT ^= BIT0;
-            timerClock = 0;
-            select_index(index, list, &g_sContext);
-            index = (index + 1) % 3;
-        }
+        PCM_gotoLPM0();
     }
 }
 
-void setup_timer() {
-    TIMER_A0->CCTL[0] = TIMER_A_CCTLN_CCIE;
-    TIMER_A0->CCR[0] = 5000;
-    TIMER_A0->CTL = TIMER_A_CTL_SSEL__ACLK | TIMER_A_CTL_MC__CONTINUOUS | TIMER_A_CTL_ID_1;
-    NVIC->ISER[0] = 1 << ((TA0_0_IRQn) & 31);
+
+void ADC14_IRQHandler(void) {
+    uint64_t status;
+
+    status = MAP_ADC14_getEnabledInterruptStatus();
+    MAP_ADC14_clearInterruptFlag(status);
+
+
+    if (status & ADC_INT1) {
+        cursorPosition[0] = ADC14_getResult(ADC_MEM0);
+        cursorPosition[1] = ADC14_getResult(ADC_MEM1);
+
+        char string[10];
+        sprintf(string, "X: %5d", cursorPosition[0]);
+        Graphics_drawStringCentered(&g_sContext,
+                                        (int8_t *)string,
+                                        8,
+                                        64,
+                                        50,
+                                        OPAQUE_TEXT);
+
+        sprintf(string, "Y: %5d", cursorPosition[1]);
+        Graphics_drawStringCentered(&g_sContext,
+                                        (int8_t *)string,
+                                        8,
+                                        64,
+                                        70,
+                                        OPAQUE_TEXT);
+
+        int buttonPressed = 0;
+         if (!(P4IN & GPIO_PIN1))
+             buttonPressed = 1;
+
+         sprintf(string, "Button: %d", buttonPressed);
+         Graphics_drawStringCentered(&g_sContext,
+                                         (int8_t *)string,
+                                         AUTO_STRING_LENGTH,
+                                         64,
+                                         90,
+                                         OPAQUE_TEXT);
+    }
 }
-
-
-
-void TA0_0_IRQHandler() {
-    TIMER_A0->CCTL[0] &= ~TIMER_A_CCTLN_CCIFG;
-
-    timerClock = 1;
-
-}
-
