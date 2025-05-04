@@ -19,9 +19,17 @@
 
 Graphics_Context g_sContext;
 char list[20][20];
-int index = 0;
+uint8_t index = 0;
 
-static uint16_t cursorPosition[2];  // [X, Y]
+/*
+ * indicates whether the cursor is in "center" mode or in "point" mode
+ * 0 -> center
+ * 1 -> point
+ */
+static uint8_t cursorStatus = 0;
+
+// keeps track of the cursor position with values from 0 -> down, to 2^16 -> up
+static uint16_t cursorPosition;
 
 int main(void)
 {
@@ -43,61 +51,66 @@ int main(void)
     MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     MAP_CS_initClockSignal(CS_ACLK, CS_REFOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
+    // first init the display
+    init_display(&g_sContext);
+
+    // then init the adc converter otherwise it does not work
     init_adc();
 
-    //sprintf(list[0], "mario");
-    //sprintf(list[1], "gianni");
-    //sprintf(list[2], "tony");
+    sprintf(list[0], "mario");
+    sprintf(list[1], "gianni");
+    sprintf(list[2], "tony");
+    sprintf(list[3], "antonello");
+    sprintf(list[4], "antonello");
+    sprintf(list[5], "mariuccio");
+    sprintf(list[6], "marilena");
+    sprintf(list[7], "giovanna");
 
-    init_display(&g_sContext);
-    //display_information(10.0, &g_sContext);
-    //display_list(list, &g_sContext);
+
+    display_information(10.0, &g_sContext);
+    get_list(list);
+    display_list(&g_sContext);
 
     // Loop forever
     while (1) {
-        PCM_gotoLPM0();
+        MAP_PCM_gotoLPM0();
     }
 }
 
-
-void ADC14_IRQHandler(void) {
+void ADC14_IRQHandler(void)
+{
     uint64_t status;
 
     status = MAP_ADC14_getEnabledInterruptStatus();
     MAP_ADC14_clearInterruptFlag(status);
 
+    /* ADC_MEM1 conversion completed */
+    if(status & ADC_INT1)
+    {
+        /* Store ADC14 conversion results */
+        cursorPosition = ADC14_getResult(ADC_MEM1);
 
-    if (status & ADC_INT1) {
-        cursorPosition[0] = ADC14_getResult(ADC_MEM0);
-        cursorPosition[1] = ADC14_getResult(ADC_MEM1);
+        /*
+         * cursorStatus = used to avoid repeated action when selecting due to conversion noise. (sometimes instead of one step it took 2 steps)
+         * - if cursor status is in center mode, check if the cursor goes to one of the 2 borders and perform the related function
+         * - set cursorStatus to 1 to avoid repeating the action
+         * - when cursorStatus == 1 check if the cursor comes back to a more centric position. The boundries are shifted towards the center
+         * to avoid noise issues
+         */
 
-        char string[10];
-        sprintf(string, "X: %5d", cursorPosition[0]);
-        Graphics_drawStringCentered(&g_sContext,
-                                        (int8_t *)string,
-                                        8,
-                                        64,
-                                        50,
-                                        OPAQUE_TEXT);
-
-        sprintf(string, "Y: %5d", cursorPosition[1]);
-        Graphics_drawStringCentered(&g_sContext,
-                                        (int8_t *)string,
-                                        8,
-                                        64,
-                                        70,
-                                        OPAQUE_TEXT);
-
-        int buttonPressed = 0;
-         if (!(P4IN & GPIO_PIN1))
-             buttonPressed = 1;
-
-         sprintf(string, "Button: %d", buttonPressed);
-         Graphics_drawStringCentered(&g_sContext,
-                                         (int8_t *)string,
-                                         AUTO_STRING_LENGTH,
-                                         64,
-                                         90,
-                                         OPAQUE_TEXT);
+        if (cursorStatus == 0){
+            if (cursorPosition < 1000) {
+                scroll_down(&g_sContext);
+                cursorStatus = 1;
+            } else if (cursorPosition > 15000) {
+                scroll_up(&g_sContext);
+                cursorStatus = 1;
+            }
+        } else {
+            if ((cursorPosition > 1500) && (cursorPosition < 15000)) {
+                cursorStatus = 0;
+            }
+        }
     }
 }
+

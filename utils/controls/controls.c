@@ -11,10 +11,7 @@ void init_adc(){
 
     /* Configuring ADC Memory (ADC_MEM0 - ADC_MEM1 (A15, A9)  with repeat)
          * with internal 2.5v reference */
-    MAP_ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, true);
-    MAP_ADC14_configureConversionMemory(ADC_MEM0,
-            ADC_VREFPOS_AVCC_VREFNEG_VSS,
-            ADC_INPUT_A15, ADC_NONDIFFERENTIAL_INPUTS);
+    MAP_ADC14_configureSingleSampleMode(ADC_MEM1, true);
 
     MAP_ADC14_configureConversionMemory(ADC_MEM1,
             ADC_VREFPOS_AVCC_VREFNEG_VSS,

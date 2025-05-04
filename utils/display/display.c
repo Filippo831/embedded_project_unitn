@@ -6,6 +6,9 @@
 #define NAV_HEIGHT 27
 #define BODY_HEIGHT 100
 
+static char (*menuItems)[20];
+static int totalItems;
+
 
 void init_display(Graphics_Context *g_sContext) {
     /* Initializes display */
@@ -15,13 +18,26 @@ void init_display(Graphics_Context *g_sContext) {
     Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
 
     /* Initializes graphics context */
-    Graphics_initContext(&g_sContext, &g_sCrystalfontz128x128, &g_sCrystalfontz128x128_funcs);
-    Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_RED);
-    Graphics_setBackgroundColor(&g_sContext, GRAPHICS_COLOR_WHITE);
-    GrContextFontSet(&g_sContext, &g_sFontFixed6x8);
-    Graphics_clearDisplay(&g_sContext);
+    Graphics_initContext(g_sContext, &g_sCrystalfontz128x128, &g_sCrystalfontz128x128_funcs);
+    Graphics_setBackgroundColor(g_sContext, GRAPHICS_COLOR_WHITE);
+    Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_BLACK);
+    GrContextFontSet(g_sContext, &g_sFontFixed6x8);
+    Graphics_clearDisplay(g_sContext);
 }
 
+void get_list(char list[][20]) {
+    menuItems = list;
+
+    int index = 0;
+    while (1) {
+        if (list[index][0] == 0) {
+            break;
+        }
+        index = index + 1;
+    }
+
+    totalItems = index;
+}
 
 /* display navbar with current temperpature
  * make the sensore push a read every now and then, use a timer for this
@@ -31,8 +47,11 @@ void display_information(float temp, Graphics_Context *g_sContext) {
     char tempString[10];
     sprintf(tempString, "%.1fC", temp);
     
-    Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_WHITE);
     Graphics_drawStringCentered(g_sContext, (int8_t *)tempString, AUTO_STRING_LENGTH, 64, 12, OPAQUE_TEXT);
+
+    Graphics_Rectangle listAreaRect = {0, NAV_HEIGHT-2, 127, NAV_HEIGHT};
+    Graphics_fillRectangle(g_sContext, &listAreaRect);
+
 }
 
 // contains the index of action selected, used to highlight the right row
@@ -41,15 +60,18 @@ int selectedIndex = 0;
 // take count of how many items are on top of the highest displayed string
 int scrollOffset = 0;
 
-void display_list(char menuItems[][20], Graphics_Context *g_sContext) {
-    Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_SANDY_BROWN);
+void display_list(Graphics_Context *g_sContext) {
+    Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_WHITE);
     Graphics_Rectangle listAreaRect = {0, 127-BODY_HEIGHT, 127, 127};
     Graphics_fillRectangle(g_sContext, &listAreaRect);
+    Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_BLACK);
+
     
     int i;
-    for (i = 0; i < 3; i++) {
+
+    for (i = 0; i < totalItems; i++) {
         int itemIndex = i + scrollOffset;
-        if (itemIndex >= 3)
+        if (itemIndex >= totalItems)
             break;
         
         if (itemIndex == selectedIndex) {
@@ -58,38 +80,34 @@ void display_list(char menuItems[][20], Graphics_Context *g_sContext) {
             Graphics_Rectangle itemRect = {0, NAV_HEIGHT + (20*i) + 3, 127, NAV_HEIGHT + (20*i) + 15};
             Graphics_fillRectangle(g_sContext, &itemRect);
             Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_BLACK);
-        } else {
-            Graphics_setForegroundColor(g_sContext, GRAPHICS_COLOR_BLACK);
         }
-        
 
         Graphics_drawString(g_sContext, (int8_t *)menuItems[itemIndex], AUTO_STRING_LENGTH, 10, 33 + (i * 20), OPAQUE_TEXT);
     }
 }
 
 
-void select_index(int index, char menuItems[][20], Graphics_Context *g_sContext) {
+void select_index(int index, Graphics_Context *g_sContext) {
     selectedIndex = index;
-    display_list(menuItems, g_sContext);
+    display_list(g_sContext);
 }
 
-void scroll_up(char** menuItems, Graphics_Context *g_sContext) {
+void scroll_up(Graphics_Context *g_sContext) {
     if (selectedIndex > 0) {
         selectedIndex--;
         if (selectedIndex < scrollOffset) {
             scrollOffset--;
         }
-        display_list(menuItems, g_sContext);
+        display_list(g_sContext);
     }
 }
 
-void scroll_down(char** menuItems, Graphics_Context *g_sContext) {
-    int totalItems = 3;
+void scroll_down(Graphics_Context *g_sContext) {
     if (selectedIndex < totalItems - 1) {
         selectedIndex++;
         if (selectedIndex >= scrollOffset + MAX_VISIBLE_ITEMS) {
             scrollOffset++;
         }
-        display_list(menuItems, g_sContext);
+        display_list(g_sContext);
     }
 }
