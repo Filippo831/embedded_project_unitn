@@ -6,6 +6,7 @@
 
 #include "utils/display/display.h"
 #include "utils/controls/controls.h"
+#include "utils/serial/serial.h"
 
 
 /*
@@ -32,6 +33,11 @@ float calDifference;
 float temperature;
 
 uint16_t counter = 0;
+
+
+uint8_t TXData = 1;
+
+
 /*
  * indicates whether the cursor is in "center" mode or in "point" mode
  * 0 -> center
@@ -81,7 +87,10 @@ int main(void)
     setup_temperature();
     setup_cursor();
     setup_button();
+    //setup_serial();
+
     enable_interrupts();
+
 
     //test();
     //Interrupt_enableMaster();
@@ -101,7 +110,10 @@ int main(void)
 
     // Loop forever
     while (1) {
-        MAP_PCM_gotoLPM0();
+        //UART_transmitData(EUSCI_A2_BASE, TXData);
+
+        //Interrupt_enableSleepOnIsrExit();
+        PCM_gotoLPM0InterruptSafe();
     }
 }
 

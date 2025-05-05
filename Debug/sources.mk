@@ -115,4 +115,5 @@ SUBDIRS := \
 LcdDriver \
 utils/controls \
 utils/display \
+utils/serial \
 

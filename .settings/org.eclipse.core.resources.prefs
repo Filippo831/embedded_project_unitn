@@ -10,3 +10,5 @@ encoding//Debug/utils/controls/subdir_rules.mk=UTF-8
 encoding//Debug/utils/controls/subdir_vars.mk=UTF-8
 encoding//Debug/utils/display/subdir_rules.mk=UTF-8
 encoding//Debug/utils/display/subdir_vars.mk=UTF-8
+encoding//Debug/utils/serial/subdir_rules.mk=UTF-8
+encoding//Debug/utils/serial/subdir_vars.mk=UTF-8
