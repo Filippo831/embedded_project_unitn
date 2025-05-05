@@ -18,9 +18,20 @@
 
 
 Graphics_Context g_sContext;
+
+
+// list of action and its index
 char list[20][20];
 uint8_t index = 0;
 
+
+// variable for temperature reading
+uint16_t cal30;
+uint16_t cal85;
+float calDifference;
+float temperature;
+
+uint16_t counter = 0;
 /*
  * indicates whether the cursor is in "center" mode or in "point" mode
  * 0 -> center
@@ -54,8 +65,21 @@ int main(void)
     // first init the display
     init_display(&g_sContext);
 
+    // init temperature sensor
+    REF_A_enableTempSensor();
+    REF_A_setReferenceVoltage(REF_A_VREF2_5V);
+    REF_A_enableReferenceVoltage();
+
+    cal30 = SysCtl_getTempCalibrationConstant(SYSCTL_2_5V_REF, SYSCTL_30_DEGREES_C);
+    cal85 = SysCtl_getTempCalibrationConstant(SYSCTL_2_5V_REF, SYSCTL_85_DEGREES_C);
+    calDifference = cal30 - cal85;
+
+
     // then init the adc converter otherwise it does not work
     init_adc();
+    setup_temperature();
+    setup_cursor();
+    enable_interrupts();
 
     sprintf(list[0], "mario");
     sprintf(list[1], "gianni");
@@ -67,7 +91,6 @@ int main(void)
     sprintf(list[7], "giovanna");
 
 
-    display_information(10.0, &g_sContext);
     get_list(list);
     display_list(&g_sContext);
 
@@ -80,6 +103,8 @@ int main(void)
 void ADC14_IRQHandler(void)
 {
     uint64_t status;
+
+    int16_t conRes;
 
     status = MAP_ADC14_getEnabledInterruptStatus();
     MAP_ADC14_clearInterruptFlag(status);
@@ -111,6 +136,20 @@ void ADC14_IRQHandler(void)
                 cursorStatus = 0;
             }
         }
+
+
+        if (counter == 0) {
+            conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
+            temperature = (conRes / calDifference) + 30.0f;
+
+            display_information(temperature, &g_sContext);
+
+            counter = 500;
+        }
+        counter = counter - 1;
+
     }
+
+
 }
 

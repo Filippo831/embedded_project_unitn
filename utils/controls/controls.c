@@ -1,24 +1,20 @@
 #include "controls.h"
 
-void init_adc(){
-    /* Configures Pin 6.0 and 4.4 as ADC input */
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P6, GPIO_PIN0, GPIO_TERTIARY_MODULE_FUNCTION);
-    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P4, GPIO_PIN4, GPIO_TERTIARY_MODULE_FUNCTION);
+void setup_adc() {
 
+}
+
+void init_adc() {
     /* Initializing ADC (ADCOSC/64/8) */
     MAP_ADC14_enableModule();
-    MAP_ADC14_initModule(ADC_CLOCKSOURCE_ADCOSC, ADC_PREDIVIDER_64, ADC_DIVIDER_8, 0);
+    MAP_ADC14_initModule(ADC_CLOCKSOURCE_MCLK, ADC_PREDIVIDER_64, ADC_DIVIDER_8, ADC_TEMPSENSEMAP);
 
-    /* Configuring ADC Memory (ADC_MEM0 - ADC_MEM1 (A15, A9)  with repeat)
-         * with internal 2.5v reference */
-    MAP_ADC14_configureSingleSampleMode(ADC_MEM1, true);
+    MAP_ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, true);
+}
 
-    MAP_ADC14_configureConversionMemory(ADC_MEM1,
-            ADC_VREFPOS_AVCC_VREFNEG_VSS,
-            ADC_INPUT_A9, ADC_NONDIFFERENTIAL_INPUTS);
+void enable_interrupts() {
+    //MAP_ADC14_setSampleHoldTime(ADC_PULSE_WIDTH_192, ADC_PULSE_WIDTH_192);
 
-    /* Enabling the interrupt when a conversion on channel 1 (end of sequence)
-     *  is complete and enabling conversions */
     MAP_ADC14_enableInterrupt(ADC_INT1);
 
     /* Enabling Interrupts */
@@ -33,4 +29,30 @@ void init_adc(){
     /* Triggering the start of the sample */
     MAP_ADC14_enableConversion();
     MAP_ADC14_toggleConversionTrigger();
+}
+
+void setup_cursor(){
+    /* Configures Pin 6.0 as ADC input */
+    MAP_GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P6, GPIO_PIN0, GPIO_TERTIARY_MODULE_FUNCTION);
+
+
+    MAP_ADC14_configureSingleSampleMode(ADC_MEM1, true);
+
+    MAP_ADC14_configureConversionMemory(ADC_MEM1,
+            ADC_VREFPOS_AVCC_VREFNEG_VSS,
+            ADC_INPUT_A9, ADC_NONDIFFERENTIAL_INPUTS);
+}
+
+
+void setup_temperature() {
+
+    MAP_ADC14_configureSingleSampleMode(ADC_MEM0, true);
+
+    MAP_ADC14_configureConversionMemory(ADC_MEM0,
+         ADC_VREFPOS_INTBUF_VREFNEG_VSS,
+         ADC_INPUT_A22, false);
+
+    MAP_ADC14_setSampleHoldTime(ADC_PULSE_WIDTH_192, ADC_PULSE_WIDTH_192);
+
+
 }

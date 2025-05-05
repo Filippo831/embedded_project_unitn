@@ -5,4 +5,10 @@
 
 extern void init_adc();
 
+extern void enable_interrupts();
+
+extern void setup_cursor();
+
+extern void setup_temperature();
+
 
