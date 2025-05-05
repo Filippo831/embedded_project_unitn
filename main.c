@@ -76,10 +76,15 @@ int main(void)
 
 
     // then init the adc converter otherwise it does not work
+
     init_adc();
     setup_temperature();
     setup_cursor();
+    setup_button();
     enable_interrupts();
+
+    //test();
+    //Interrupt_enableMaster();
 
     sprintf(list[0], "mario");
     sprintf(list[1], "gianni");
@@ -137,9 +142,15 @@ void ADC14_IRQHandler(void)
             }
         }
 
+        /*
+        conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
+        temperature = (conRes / calDifference) + 30.0f;
 
+        display_information(temperature, &g_sContext);
+        */
+        conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
         if (counter == 0) {
-            conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
+
             temperature = (conRes / calDifference) + 30.0f;
 
             display_information(temperature, &g_sContext);
@@ -149,7 +160,15 @@ void ADC14_IRQHandler(void)
         counter = counter - 1;
 
     }
-
-
 }
+
+void PORT5_IRQHandler(void) {
+    uint32_t status = GPIO_getEnabledInterruptStatus(GPIO_PORT_P5);
+    GPIO_clearInterruptFlag(GPIO_PORT_P5, status);
+
+    if (status & GPIO_PIN1) {
+        scroll_up(&g_sContext);
+    }
+}
+
 
