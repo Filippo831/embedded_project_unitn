@@ -82,15 +82,8 @@ int main(void)
 
 
     // then init the adc converter otherwise it does not work
-
-    init_adc();
-    setup_temperature();
-    setup_cursor();
-    setup_button();
-    //setup_serial();
-
-    enable_interrupts();
-
+    //setup_adc();
+    setup_serial();
 
     //test();
     //Interrupt_enableMaster();
@@ -113,7 +106,9 @@ int main(void)
         //UART_transmitData(EUSCI_A2_BASE, TXData);
 
         //Interrupt_enableSleepOnIsrExit();
-        PCM_gotoLPM0InterruptSafe();
+        //PCM_gotoLPM0InterruptSafe();
+        printf("Hello from MSP432!\r\n");
+        __delay_cycles(3000000);
     }
 }
 
@@ -160,9 +155,10 @@ void ADC14_IRQHandler(void)
 
         display_information(temperature, &g_sContext);
         */
-        conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
-        if (counter == 0) {
 
+
+        if (counter == 0) {
+            conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
             temperature = (conRes / calDifference) + 30.0f;
 
             display_information(temperature, &g_sContext);
@@ -172,6 +168,8 @@ void ADC14_IRQHandler(void)
         counter = counter - 1;
 
     }
+
+    UART_transmitData(EUSCI_A0_BASE, 70);
 }
 
 void PORT5_IRQHandler(void) {
@@ -183,4 +181,10 @@ void PORT5_IRQHandler(void) {
     }
 }
 
+
+int fputc(int ch, FILE *f)
+{
+    UART_transmitData(EUSCI_A0_BASE, ch);
+    return ch;
+}
 
