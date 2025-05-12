@@ -46,8 +46,9 @@ uint8_t RXData;
  */
 static uint8_t cursorStatus = 0;
 
-char word[20];
+static char word[20];
 static uint8_t wordIndex = 0;
+static uint8_t currentString = 0;
 
 // keeps track of the cursor position with values from 0 -> down, to 2^16 -> up
 static uint16_t cursorPosition;
@@ -90,6 +91,7 @@ int main(void)
     setup_serial();
 
 
+    /*
     sprintf(list[0], "mario");
     sprintf(list[1], "gianni");
     sprintf(list[2], "tony");
@@ -98,7 +100,7 @@ int main(void)
     sprintf(list[5], "mariuccio");
     sprintf(list[6], "marilena");
     sprintf(list[7], "giovanna");
-
+    */
 
     get_list(list);
     display_list(&g_sContext);
@@ -181,12 +183,30 @@ void PORT5_IRQHandler(void) {
 
 void EUSCIA0_IRQHandler(void)
 {
-    uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
-    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+    uint32_t status = UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
+    UART_clearInterruptFlag(EUSCI_A0_BASE, status);
+
+    if (status & EUSCI_A_UART_RECEIVE_INTERRUPT)
     {
-        MAP_UART_transmitData(EUSCI_A0_BASE, MAP_UART_receiveData(EUSCI_A0_BASE));
+        char received = UART_receiveData(EUSCI_A0_BASE);
+
+        if (received == '\n')  // End of string
+        {
+            word[wordIndex] = '\0';  // Null-terminate the buffer
+
+            sprintf(list[currentString], word);
+            currentString = currentString + 1;
+
+            wordIndex = 0;  // Reset buffer
+            get_list(list);
+            display_list(&g_sContext);
+        }
+
+        word[wordIndex++] = received;
+
     }
-    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
-    return;
 }
+
+
+
 

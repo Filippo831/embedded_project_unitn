@@ -28,6 +28,11 @@ void setup_serial(void)
     /* Enable UART module */
     MAP_UART_enableModule(EUSCI_A0_BASE);
 
+
+    MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
+    MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
+
+
     // Interrupt enable Master must be called: MAP_Interrupt_enableMaster();
     lprintf(EUSCI_A0_BASE, "PRINT> Initialized.\r\n");
 }
