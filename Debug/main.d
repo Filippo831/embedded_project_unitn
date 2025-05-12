@@ -59,6 +59,8 @@ main.obj: C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdarg.
 main.obj: ../utils/display/display.h
 main.obj: ../utils/controls/controls.h
 main.obj: ../utils/serial/serial.h
+main.obj: ../utils/serial/printf.h
+main.obj: ../utils/serial/printf.h
 
 ../main.c:
 
@@ -177,4 +179,8 @@ C:/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdarg.h:
 ../utils/controls/controls.h:
 
 ../utils/serial/serial.h:
+
+../utils/serial/printf.h:
+
+../utils/serial/printf.h:
 

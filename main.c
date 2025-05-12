@@ -7,6 +7,7 @@
 #include "utils/display/display.h"
 #include "utils/controls/controls.h"
 #include "utils/serial/serial.h"
+#include "utils/serial/printf.h"
 
 
 /*
@@ -35,7 +36,7 @@ float temperature;
 uint16_t counter = 0;
 
 
-uint8_t TXData = 1;
+uint8_t RXData;
 
 
 /*
@@ -44,6 +45,9 @@ uint8_t TXData = 1;
  * 1 -> point
  */
 static uint8_t cursorStatus = 0;
+
+char word[20];
+static uint8_t wordIndex = 0;
 
 // keeps track of the cursor position with values from 0 -> down, to 2^16 -> up
 static uint16_t cursorPosition;
@@ -82,11 +86,9 @@ int main(void)
 
 
     // then init the adc converter otherwise it does not work
-    //setup_adc();
+    setup_adc();
     setup_serial();
 
-    //test();
-    //Interrupt_enableMaster();
 
     sprintf(list[0], "mario");
     sprintf(list[1], "gianni");
@@ -103,12 +105,8 @@ int main(void)
 
     // Loop forever
     while (1) {
-        //UART_transmitData(EUSCI_A2_BASE, TXData);
+        MAP_PCM_gotoLPM0();
 
-        //Interrupt_enableSleepOnIsrExit();
-        //PCM_gotoLPM0InterruptSafe();
-        printf("Hello from MSP432!\r\n");
-        __delay_cycles(3000000);
     }
 }
 
@@ -157,6 +155,7 @@ void ADC14_IRQHandler(void)
         */
 
 
+        /*
         if (counter == 0) {
             conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
             temperature = (conRes / calDifference) + 30.0f;
@@ -166,10 +165,8 @@ void ADC14_IRQHandler(void)
             counter = 500;
         }
         counter = counter - 1;
-
+        */
     }
-
-    UART_transmitData(EUSCI_A0_BASE, 70);
 }
 
 void PORT5_IRQHandler(void) {
@@ -182,9 +179,14 @@ void PORT5_IRQHandler(void) {
 }
 
 
-int fputc(int ch, FILE *f)
+void EUSCIA0_IRQHandler(void)
 {
-    UART_transmitData(EUSCI_A0_BASE, ch);
-    return ch;
+    uint32_t status = MAP_UART_getEnabledInterruptStatus(EUSCI_A0_BASE);
+    if(status & EUSCI_A_UART_RECEIVE_INTERRUPT_FLAG)
+    {
+        MAP_UART_transmitData(EUSCI_A0_BASE, MAP_UART_receiveData(EUSCI_A0_BASE));
+    }
+    MAP_UART_clearInterruptFlag(EUSCI_A0_BASE, status);
+    return;
 }
 

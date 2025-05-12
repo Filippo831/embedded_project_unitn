@@ -17,6 +17,7 @@ ORDERED_OBJS += \
 "./LcdDriver/HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.obj" \
 "./utils/controls/controls.obj" \
 "./utils/display/display.obj" \
+"./utils/serial/printf.obj" \
 "./utils/serial/serial.obj" \
 "../msp432p401r.cmd" \
 $(GEN_CMDS__FLAG) \
@@ -158,8 +159,8 @@ progetto-embedded.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" "LcdDriver\Crystalfontz128x128_ST7735.obj" "LcdDriver\HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.obj" "utils\controls\controls.obj" "utils\display\display.obj" "utils\serial\serial.obj" 
-	-$(RM) "main.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" "LcdDriver\Crystalfontz128x128_ST7735.d" "LcdDriver\HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.d" "utils\controls\controls.d" "utils\display\display.d" "utils\serial\serial.d" 
+	-$(RM) "main.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" "LcdDriver\Crystalfontz128x128_ST7735.obj" "LcdDriver\HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.obj" "utils\controls\controls.obj" "utils\display\display.obj" "utils\serial\printf.obj" "utils\serial\serial.obj" 
+	-$(RM) "main.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" "LcdDriver\Crystalfontz128x128_ST7735.d" "LcdDriver\HAL_MSP_EXP432P401R_Crystalfontz128x128_ST7735.d" "utils\controls\controls.d" "utils\display\display.d" "utils\serial\printf.d" "utils\serial\serial.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
