@@ -19,10 +19,24 @@ void setup_adc() {
     ADC14_enableInterrupt(ADC_INT1);  // Use interrupt on MEM1 (last in sequence)
 
     Interrupt_enableInterrupt(INT_ADC14);
-    Interrupt_enableMaster();
+
 
     ADC14_enableConversion();
     ADC14_toggleConversionTrigger();
 
 }
 
+
+void setup_button() {
+    // Set P5.1 as input with pull-up resistor
+    GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P5, GPIO_PIN1);
+
+    // Enable interrupt on P5.1 (falling edge when button pressed)
+    GPIO_interruptEdgeSelect(GPIO_PORT_P5, GPIO_PIN1, GPIO_HIGH_TO_LOW_TRANSITION);
+    GPIO_clearInterruptFlag(GPIO_PORT_P5, GPIO_PIN1);
+    GPIO_enableInterrupt(GPIO_PORT_P5, GPIO_PIN1);
+
+    // Enable PORT5 interrupt in NVIC
+    Interrupt_enableInterrupt(INT_PORT5);
+
+}

@@ -6,3 +6,4 @@
 
 extern void setup_adc();
 
+extern void setup_button();

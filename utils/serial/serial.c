@@ -1,5 +1,5 @@
 #include "serial.h"
-
+/*
 const eUSCI_UART_ConfigV1 uartConfigAclk =
 {
     EUSCI_A_UART_CLOCKSOURCE_ACLK, // ACLK Clock Source
@@ -12,6 +12,21 @@ const eUSCI_UART_ConfigV1 uartConfigAclk =
     EUSCI_A_UART_MODE,
     EUSCI_A_UART_LOW_FREQUENCY_BAUDRATE_GENERATION
 };
+*/
+
+const eUSCI_UART_ConfigV1 uartConfigSmclk =
+{
+    EUSCI_A_UART_CLOCKSOURCE_SMCLK, // Use SMCLK
+    78, // clockPrescalar (for 12 MHz)
+    2,  // firstModReg
+    0,  // secondModReg
+    EUSCI_A_UART_NO_PARITY,
+    EUSCI_A_UART_LSB_FIRST,
+    EUSCI_A_UART_ONE_STOP_BIT,
+    EUSCI_A_UART_MODE,
+    EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION
+};
+
 
 
 void setup_serial(void)
@@ -23,7 +38,9 @@ void setup_serial(void)
             GPIO_PRIMARY_MODULE_FUNCTION);
 
     /* Configuring UART Module */
-    MAP_UART_initModule(EUSCI_A0_BASE, &uartConfigAclk);
+    //MAP_UART_initModule(EUSCI_A0_BASE, &uartConfigAclk);
+    MAP_UART_initModule(EUSCI_A0_BASE, &uartConfigSmclk);
+
 
     /* Enable UART module */
     MAP_UART_enableModule(EUSCI_A0_BASE);
@@ -32,7 +49,4 @@ void setup_serial(void)
     MAP_UART_enableInterrupt(EUSCI_A0_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
     MAP_Interrupt_enableInterrupt(INT_EUSCIA0);
 
-
-    // Interrupt enable Master must be called: MAP_Interrupt_enableMaster();
-    lprintf(EUSCI_A0_BASE, "PRINT> Initialized.\r\n");
 }

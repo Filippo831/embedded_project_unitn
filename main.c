@@ -24,7 +24,7 @@ Graphics_Context g_sContext;
 
 // list of action and its index
 char list[20][20];
-uint8_t index = 0;
+uint8_t *index = NULL;
 
 
 // variable for temperature reading
@@ -46,9 +46,12 @@ uint8_t RXData;
  */
 static uint8_t cursorStatus = 0;
 
-static char word[20];
+static char word[200];
+static uint8_t wordLength = 0;
 static uint8_t wordIndex = 0;
 static uint8_t currentString = 0;
+
+static bool isFound = 0;
 
 // keeps track of the cursor position with values from 0 -> down, to 2^16 -> up
 static uint16_t cursorPosition;
@@ -67,14 +70,14 @@ int main(void)
     MAP_FlashCtl_setWaitState(FLASH_BANK1, 2);
 
     /* Initializes Clock System */
-    MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_48);
+    MAP_CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_12);
     MAP_CS_initClockSignal(CS_MCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     MAP_CS_initClockSignal(CS_HSMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     MAP_CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     MAP_CS_initClockSignal(CS_ACLK, CS_REFOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
     // first init the display
-    init_display(&g_sContext);
+    init_display(&g_sContext, index);
 
     // init temperature sensor
     REF_A_enableTempSensor();
@@ -89,25 +92,36 @@ int main(void)
     // then init the adc converter otherwise it does not work
     setup_adc();
     setup_serial();
+    setup_button();
 
 
-    /*
-    sprintf(list[0], "mario");
-    sprintf(list[1], "gianni");
-    sprintf(list[2], "tony");
-    sprintf(list[3], "antonello");
-    sprintf(list[4], "antonello");
-    sprintf(list[5], "mariuccio");
-    sprintf(list[6], "marilena");
-    sprintf(list[7], "giovanna");
-    */
+    Interrupt_enableMaster();
 
     get_list(list);
     display_list(&g_sContext);
 
+
+
     // Loop forever
     while (1) {
-        MAP_PCM_gotoLPM0();
+        if (isFound) {
+            int forIndex;
+            for (forIndex = 0; forIndex < wordLength; forIndex++ ) {
+                if (word[forIndex] == '\n') {
+                    currentString++;
+                    wordIndex = 0;
+                } else {
+                    list[currentString][wordIndex] = word[forIndex];
+                    wordIndex++;
+                }
+            }
+
+            get_list(list);
+            display_list(&g_sContext);
+            isFound = false;
+        }
+
+        //MAP_PCM_gotoLPM0();
 
     }
 }
@@ -157,17 +171,17 @@ void ADC14_IRQHandler(void)
         */
 
 
-        /*
+
         if (counter == 0) {
             conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
             temperature = (conRes / calDifference) + 30.0f;
 
             display_information(temperature, &g_sContext);
 
-            counter = 500;
+            counter = 2000;
         }
         counter = counter - 1;
-        */
+
     }
 }
 
@@ -176,7 +190,7 @@ void PORT5_IRQHandler(void) {
     GPIO_clearInterruptFlag(GPIO_PORT_P5, status);
 
     if (status & GPIO_PIN1) {
-        scroll_up(&g_sContext);
+        lprintf(EUSCI_A0_BASE, get_element());
     }
 }
 
@@ -190,19 +204,10 @@ void EUSCIA0_IRQHandler(void)
     {
         char received = UART_receiveData(EUSCI_A0_BASE);
 
-        if (received == '\n')  // End of string
-        {
-            word[wordIndex] = '\0';  // Null-terminate the buffer
-
-            sprintf(list[currentString], word);
-            currentString = currentString + 1;
-
-            wordIndex = 0;  // Reset buffer
-            get_list(list);
-            display_list(&g_sContext);
+        word[wordLength++] = received;
+        if (received == '!') {
+            isFound = true;
         }
-
-        word[wordIndex++] = received;
 
     }
 }

@@ -9,8 +9,11 @@
 static char (*menuItems)[20];
 static int totalItems;
 
+// contains the index of action selected, used to highlight the right row
+uint8_t selectedIndex = 0;
 
-void init_display(Graphics_Context *g_sContext) {
+void init_display(Graphics_Context *g_sContext, uint8_t *index) {
+    index = &selectedIndex;
     /* Initializes display */
     Crystalfontz128x128_Init();
 
@@ -54,8 +57,7 @@ void display_information(float temp, Graphics_Context *g_sContext) {
 
 }
 
-// contains the index of action selected, used to highlight the right row
-int selectedIndex = 0;
+
 
 // take count of how many items are on top of the highest displayed string
 int scrollOffset = 0;
@@ -110,4 +112,8 @@ void scroll_down(Graphics_Context *g_sContext) {
         }
         display_list(g_sContext);
     }
+}
+
+char *get_element() {
+    return menuItems[selectedIndex];
 }
