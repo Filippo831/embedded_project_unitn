@@ -31,7 +31,7 @@ uint8_t *index = NULL;
 uint16_t cal30;
 uint16_t cal85;
 float calDifference;
-float temperature;
+float temperature = 10.0;
 
 uint16_t counter = 0;
 
@@ -52,6 +52,9 @@ static uint8_t wordIndex = 0;
 static uint8_t currentString = 0;
 
 static bool isFound = 0;
+
+static bool temperatureFound = 1;
+static uint16_t temperatureCounter = 99;
 
 // keeps track of the cursor position with values from 0 -> down, to 2^16 -> up
 static uint16_t cursorPosition;
@@ -79,14 +82,16 @@ int main(void)
     // first init the display
     init_display(&g_sContext, index);
 
+
     // init temperature sensor
+
     REF_A_enableTempSensor();
     REF_A_setReferenceVoltage(REF_A_VREF2_5V);
     REF_A_enableReferenceVoltage();
 
     cal30 = SysCtl_getTempCalibrationConstant(SYSCTL_2_5V_REF, SYSCTL_30_DEGREES_C);
     cal85 = SysCtl_getTempCalibrationConstant(SYSCTL_2_5V_REF, SYSCTL_85_DEGREES_C);
-    calDifference = cal30 - cal85;
+    calDifference = cal85 - cal30;
 
 
     // then init the adc converter otherwise it does not work
@@ -94,19 +99,26 @@ int main(void)
     setup_serial();
     setup_button();
 
+    display_information(100.0, &g_sContext);
+    get_list(list);
 
     Interrupt_enableMaster();
 
-    get_list(list);
-    display_list(&g_sContext);
-
-
-
     // Loop forever
     while (1) {
+        if (temperatureFound) {
+            if (temperatureCounter > 100) {
+                display_information(temperature, &g_sContext);
+                temperatureCounter = 0;
+            }
+            temperatureCounter++;
+            temperatureFound = 0;
+        }
+
+
         if (isFound) {
             int forIndex;
-            for (forIndex = 0; forIndex < wordLength; forIndex++ ) {
+            for (forIndex = 0; forIndex < wordLength - 1; forIndex++ ) {
                 if (word[forIndex] == '\n') {
                     currentString++;
                     wordIndex = 0;
@@ -115,7 +127,6 @@ int main(void)
                     wordIndex++;
                 }
             }
-
             get_list(list);
             display_list(&g_sContext);
             isFound = false;
@@ -136,6 +147,12 @@ void ADC14_IRQHandler(void)
     MAP_ADC14_clearInterruptFlag(status);
 
     /* ADC_MEM1 conversion completed */
+    if(status & ADC_INT0) {
+        conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
+        temperature = (conRes / calDifference) + 30.0f;
+        temperatureFound = true;
+    }
+
     if(status & ADC_INT1)
     {
         /* Store ADC14 conversion results */
@@ -162,27 +179,8 @@ void ADC14_IRQHandler(void)
                 cursorStatus = 0;
             }
         }
-
-        /*
-        conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
-        temperature = (conRes / calDifference) + 30.0f;
-
-        display_information(temperature, &g_sContext);
-        */
-
-
-
-        if (counter == 0) {
-            conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
-            temperature = (conRes / calDifference) + 30.0f;
-
-            display_information(temperature, &g_sContext);
-
-            counter = 2000;
-        }
-        counter = counter - 1;
-
     }
+
 }
 
 void PORT5_IRQHandler(void) {
@@ -204,13 +202,13 @@ void EUSCIA0_IRQHandler(void)
     {
         char received = UART_receiveData(EUSCI_A0_BASE);
 
-        word[wordLength++] = received;
         if (received == '!') {
             isFound = true;
         }
-
+        word[wordLength++] = received;
     }
 }
+
 
 
 

@@ -47,6 +47,7 @@ void get_list(char list[][20]) {
  *
  */
 void display_information(float temp, Graphics_Context *g_sContext) {
+
     char tempString[10];
     sprintf(tempString, "%.1fC", temp);
     
@@ -54,6 +55,7 @@ void display_information(float temp, Graphics_Context *g_sContext) {
 
     Graphics_Rectangle listAreaRect = {0, NAV_HEIGHT-2, 127, NAV_HEIGHT};
     Graphics_fillRectangle(g_sContext, &listAreaRect);
+
 
 }
 

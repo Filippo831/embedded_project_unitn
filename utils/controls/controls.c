@@ -2,24 +2,25 @@
 
 void setup_adc() {
     ADC14_enableModule();
-    ADC14_initModule(ADC_CLOCKSOURCE_MCLK, ADC_PREDIVIDER_1, ADC_DIVIDER_1, ADC_TEMPSENSEMAP);
+    ADC14_initModule(ADC_CLOCKSOURCE_MCLK, ADC_PREDIVIDER_64, ADC_DIVIDER_8, ADC_TEMPSENSEMAP);
 
     // Configure Memory:
     // MEM0 -> A22 (Temperature Sensor)
     ADC14_configureConversionMemory(ADC_MEM0, ADC_VREFPOS_INTBUF_VREFNEG_VSS, ADC_INPUT_A22, false);
 
-    // MEM1 -> A15 (Assuming joystick X-axis is connected to P6.0)
+    // MEM1 -> A9 (Assuming joystick X-axis is connected to P6.0)
     ADC14_configureConversionMemory(ADC_MEM1, ADC_VREFPOS_AVCC_VREFNEG_VSS, ADC_INPUT_A9, false);
 
     // Enable sequence-of-channels mode (for multiple MEM readings)
     ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, true);
+    //ADC14_configureSingleSampleMode(ADC_MEM0, true);
 
     ADC14_setSampleHoldTime(ADC_PULSE_WIDTH_192, ADC_PULSE_WIDTH_192);
     ADC14_enableSampleTimer(ADC_AUTOMATIC_ITERATION);
     ADC14_enableInterrupt(ADC_INT1);  // Use interrupt on MEM1 (last in sequence)
+    ADC14_enableInterrupt(ADC_INT0);
 
     Interrupt_enableInterrupt(INT_ADC14);
-
 
     ADC14_enableConversion();
     ADC14_toggleConversionTrigger();
