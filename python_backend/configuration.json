@@ -1,0 +1,28 @@
+{
+  "commands": [
+    {
+      "label": "vol_down",
+      "cmd": "amixer -D pulse sset Master 5%-"
+    },
+    {
+      "label": "vol_up",
+      "cmd": "amixer -D pulse sset Master 5%+"
+    },
+    {
+      "label": "obs",
+      "cmd": "obs &"
+    },
+    {
+      "label": "thunar",
+      "cmd": "thunar &"
+    },
+    {
+      "label": "obsidian",
+      "cmd": "obsidian &"
+    },
+    {
+      "label": "blender",
+      "cmd": "blender &"
+    }
+  ]
+}
