@@ -115,6 +115,10 @@ int main(void)
             temperatureFound = 0;
         }
 
+        /* when all the characters are received from the serial communication,
+         * isFound changes to true and this block runs. Here the break down the string into
+         * multiple strings and display the updated list
+         */
 
         if (isFound) {
             int forIndex;
@@ -148,6 +152,9 @@ void ADC14_IRQHandler(void)
 
     /* ADC_MEM1 conversion completed */
     if(status & ADC_INT0) {
+
+        // get the value from adc and calculate the temperature value
+        // then change the control variable to true and referesh the displayed value in teh main
         conRes = ((ADC14_getResult(ADC_MEM0) - cal30) * 55);
         temperature = (conRes / calDifference) + 30.0f;
         temperatureFound = true;
