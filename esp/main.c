@@ -127,8 +127,10 @@ int main(void)
                     currentString++;
                     wordIndex = 0;
                 } else {
-                    list[currentString][wordIndex] = word[forIndex];
-                    wordIndex++;
+                    if ((currentString < 20) && (wordIndex < 20)) {
+                        list[currentString][wordIndex] = word[forIndex];
+                        wordIndex++;
+                    }
                 }
             }
             get_list(list);
