@@ -1,6 +1,8 @@
 # CMD_board
 ## project overview
 CMD_board is a project that aims to use an MSP432P401R as an external controller to run some command directly on the PC. It is interfaced with the PC through a python script that sends and receive informations via serial communication.
+- [presentation](https://docs.google.com/presentation/d/1Mjc78WEUMdPqjg2xx1ol8rkAWDuLYcRG9v0-Vn2HzPM/edit?usp=sharing)
+- [video](https://drive.google.com/file/d/1p_FtdKqP693lBpkfxxgCsHIF8q6KGx-2/view?usp=drive_link)
 
 ## Requirements
 ### Hardware
