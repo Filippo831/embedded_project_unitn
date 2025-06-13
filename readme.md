@@ -6,7 +6,7 @@ CMD_board is a project that aims to use an MSP432P401R as an external controller
 
 ## Requirements
 ### Hardware
-- x Texas Instruments MSP432P401R microcontroller
+- 1x Texas Instruments MSP432P401R microcontroller
 - 1x Educational BoosterPack MKII
 
 ### Software
